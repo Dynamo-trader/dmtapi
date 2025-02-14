@@ -5,4 +5,4 @@ build
 .idea
 clear_build.py
 **/__pycache__/
-dmtapi.egg-info
+*.egg-info

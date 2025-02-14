@@ -67,7 +67,8 @@ class RequestMaker:
         )
 
         response = await self.client.get(full_url, headers=headers)
-        response.raise_for_status()
+        if response.status_code == 422:
+            raise ValueError(response.json())
         return response.json()
 
     async def post(
@@ -94,7 +95,8 @@ class RequestMaker:
         response = await self.client.post(
             full_url, data=data, json=json, headers=headers
         )
-        response.raise_for_status()
+        if response.status_code == 422:
+            raise ValueError(response.json())
         return response.json()
 
     async def close(self):

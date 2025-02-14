@@ -16,8 +16,8 @@ class TakeProfit(TypedDict):
     Attributes:
         price (float): Price level.
         close_pct (float): Close percentage.
-        tp_as_pip (Optional[float]): Take profit in pips.
-        tp_as_pct (Optional[float]): Take profit as percentage.
+        tp_as_pip (Optional[float]): Take profit in pips. Set to 0 if not used.
+        tp_as_pct (Optional[float]): Take profit as percentage. Set to 0 if not used.
     """
 
     price: float
