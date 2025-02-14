@@ -1,14 +1,14 @@
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, Field, field_validator
 
-from dmtapi.constant import TZ
+from pydantic import BaseModel, Field
 
 
 class AccountStatusEnum(str, Enum):
     """
     Enumeration of possible account connection statuses.
     """
+
     CONNECTED = "connected"
     RECONNECTING = "reconnecting"
     DISCONNECTED = "disconnected"
@@ -55,6 +55,7 @@ class TraderInfo(BaseModel):
         active (bool): Whether account is active.
         status (AccountStatusEnum): Account connection status.
     """
+
     name: str = Field("")
     server: str
     login: int
@@ -87,20 +88,3 @@ class TraderInfo(BaseModel):
     commission_blocked: float
     active: bool = False
     status: AccountStatusEnum = AccountStatusEnum.DISCONNECTED
-
-    @field_validator("inception_date", mode="before")
-    def validate_inception_date(cls, v):
-        """
-        Validate and convert inception date string to datetime object.
-
-        Args:
-            v: Input value to validate.
-
-        Returns:
-            datetime: Validated inception date.
-        """
-        if isinstance(v, str):
-            try:
-                return datetime.strptime(v, "%Y.%m.%d %H:%M:%S").astimezone(tz=TZ)
-            except OSError:
-                return datetime.now(tz=TZ)
