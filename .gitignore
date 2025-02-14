@@ -1,0 +1,6 @@
+dist
+build
+*.c
+*.pyd
+.idea
+**/__pycache__/
