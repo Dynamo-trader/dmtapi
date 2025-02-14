@@ -69,6 +69,8 @@ class RequestMaker:
         response = await self.client.get(full_url, headers=headers)
         if response.status_code == 422:
             raise ValueError(response.json())
+
+        response.raise_for_status()
         return response.json()
 
     async def post(
@@ -97,8 +99,10 @@ class RequestMaker:
         )
         if response.status_code == 422:
             raise ValueError(response.json())
+
+        response.raise_for_status()
         return response.json()
 
-    async def close(self):
+    async def close_http_client(self):
         """Properly close the session when done."""
         await self.client.aclose()
