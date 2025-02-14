@@ -4,10 +4,12 @@ from dmtapi.models.account_model import TraderInfo
 from dmtapi.models.trade_model import TradeSetup
 from dmtapi.req import RequestMaker
 
+BASE_URL = "http://localhost:8000"
+
 
 class AccountInfoApi(RequestMaker):
-    def __init__(self, api_key: str):
-        super().__init__()
+    def __init__(self, api_key: str, api_base_url: str):
+        super().__init__(api_base_url)
         self.api_key = api_key
 
     async def info(
@@ -61,8 +63,8 @@ class AccountInfoApi(RequestMaker):
 
 
 class TradeApi(RequestMaker):
-    def __init__(self, api_key: str):
-        super().__init__()
+    def __init__(self, api_key: str, api_base_url: str):
+        super().__init__(api_base_url)
         self.api_key = api_key
 
     async def open(
@@ -94,7 +96,7 @@ class TradeApi(RequestMaker):
             login=login,
             server=server,
             api_key=api_key or self.api_key,
-            data=setup.model_dump(),
+            data=setup.model_dump_json(),
         )
 
         return r
@@ -110,7 +112,9 @@ class DMTAPI:
         api_key (str): The API key for authentication.
     """
 
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str, api_base_url: str = None):
+        api_base_url = api_base_url or BASE_URL
+
         self.api_key = api_key
-        self.account = AccountInfoApi(api_key)
-        self.trade = TradeApi(api_key)
+        self.account = AccountInfoApi(self.api_key, api_base_url)
+        self.trade = TradeApi(self.api_key, api_base_url)

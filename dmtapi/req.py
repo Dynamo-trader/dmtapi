@@ -4,12 +4,10 @@ from urllib.parse import urlencode
 
 import httpx
 
-BASE_URL = "http://localhost:8000"
-
 
 class RequestMaker:
-    def __init__(self, api_base_url: Optional[str] = None):
-        self.api_base_url = api_base_url or BASE_URL
+    def __init__(self, api_base_url: str):
+        self.api_base_url = api_base_url
         self.client = httpx.AsyncClient(
             timeout=60,
             headers={"Accept-Encoding": "gzip", "Content-Type": "application/json"},

@@ -1,42 +1,29 @@
-from enum import Enum
+from typing import Optional
 
 from pydantic import BaseModel, Field
+from typing_extensions import TypedDict
 
 
-class TradeDirection(Enum):
+class TakeProfit(TypedDict):
     """
-    Enumeration of possible trade directions.
-    """
-    buy = "buy"
-    sell = "sell"
-
-
-class TakeProfit(BaseModel):
-    """
-    Configuration for take profit levels.
+    Take profit level configuration.
+    If you have provided price then tp_as_pip and tp_as_pct are ignored.
+    If you have not provided price then tp_as_pip or tp_as_pct is used, whichever is provided.
+    This is good when you do not want to calculate the price and just want to set tp as pips or percentage.
+    close_pct is the percentage of volume to close at this take profit level, min value is 0 and max is 1.
+    close_pct=0.5 means close 50% of the volume at this take profit level.
 
     Attributes:
-        price (float): Take profit price level.
-        close_pct (float): Percentage of position to close (0-1).
-        tp_as_pip (float): Take profit in pips (priority over tp_as_pct).
-        tp_as_pct (float): Take profit as percentage.
+        price (float): Price level.
+        close_pct (float): Close percentage.
+        tp_as_pip (Optional[float]): Take profit in pips.
+        tp_as_pct (Optional[float]): Take profit as percentage.
     """
-    price: float = Field(default=None, ge=0)
-    close_pct: float = Field(
-        gt=0, le=1, description="Close percentage of the total volume"
-    )
-    tp_as_pip: float = Field(
-        default=0,
-        ge=0,
-        le=1,
-        description="Take profit as pips. Priority: price > tp_as_pip > tp_as_pct",
-    )
-    tp_as_pct: float = Field(
-        default=0,
-        ge=0,
-        le=1,
-        description="Take profit as percentage. Priority: price > tp_as_pip > tp_as_pct",
-    )
+
+    price: float
+    close_pct: float
+    tp_as_pip: Optional[float]
+    tp_as_pct: Optional[float]
 
 
 class TradeSetup(BaseModel):
@@ -52,13 +39,14 @@ class TradeSetup(BaseModel):
         stop_loss (float): Stop loss price.
         sl_as_pip (float): Stop loss in pips (priority over sl_as_pct).
         sl_as_pct (float): Stop loss as percentage.
-        take_profits (list[TakeProfit]): List of take profit levels.
+        take_profits (list[TakeProfit]): List of take profit levels. (close_pct can be min 0 and max 1, representing 0-100%)
         deviation (int): Maximum price deviation (0-100).
     """
+
     symbol: str
     volume: float = Field(..., gt=0, le=100)
-    direction: TradeDirection
-    magic: int = Field(None, ge=0)
+    direction: str = Field(..., description="Trade direction (buy/sell)")
+    magic: int = Field(default=None, ge=0)
     entry_price: float = Field(default=0.0, ge=0)
     stop_loss: float = Field(default=0.0, ge=0)
     sl_as_pip: float = Field(
