@@ -1,0 +1,5 @@
+def test_import():
+    from dmtapi import DMTAPI
+
+    api = DMTAPI(api_key="01JJE3CAFEZB6NDH51R08DC9XB")
+    assert api.api_key == "01JJE3CAFEZB6NDH51R08DC9XB"
