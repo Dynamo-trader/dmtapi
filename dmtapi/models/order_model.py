@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import Enum
+from typing import Union
 
 import pytz
 from pydantic import BaseModel, Field, model_validator, field_validator
@@ -71,11 +72,11 @@ class TradeOrder(BaseModel):
 
     # https://www.mql5.com/en/docs/constants/tradingconstants/orderproperties
     ticket: int
-    time_setup: datetime | int = Field(default=None, alias="time_setup")
+    time_setup: Union[datetime, int] = Field(default=None, alias="time_setup")
     time_setup_msc: int
-    time_done: datetime | int | None = Field(default=None, alias="time_done")
+    time_done: Union[datetime, int, None] = Field(default=None, alias="time_done")
     time_done_msc: int
-    time_expiration: int | None = Field(default=None)
+    time_expiration: Union[int, None] = Field(default=None)
     type: OrderTypeEnum
     type_time: OrderTypeTimeEnum
     type_filling: int

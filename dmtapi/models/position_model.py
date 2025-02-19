@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import IntEnum
+from typing import Union
 
 import pytz
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -23,8 +24,8 @@ class Position(BaseModel):
     ticket: int
     time_msc: int
     time_update_msc: int
-    date: datetime | int = Field(default=None, alias="time")
-    date_update: datetime | int = Field(default=None, alias="time_update")
+    date: Union[datetime, int] = Field(default=None, alias="time")
+    date_update: Union[datetime, int] = Field(default=None, alias="time_update")
     type: PositionType
     magic: int = Field(default=0)
     identifier: int
