@@ -1,6 +1,19 @@
 # DMTAPI
 
-A Python package for interacting with trading accounts and managing trades.
+A comprehensive Python package for managing trading accounts and executing trades through a unified API interface. This
+package provides an asynchronous interface for interacting with trading platforms.
+
+[![PyPI version](https://badge.fury.io/py/dmtapi.svg)](https://badge.fury.io/py/dmtapi)
+[![Python versions](https://img.shields.io/pypi/pyversions/dmtapi.svg)](https://pypi.org/project/dmtapi/)
+
+## Features
+
+- Asynchronous API implementation
+- Comprehensive trading account management
+- Real-time symbol price information
+- Trade execution with multiple take-profit levels
+- Order and position tracking
+- Detailed account information retrieval
 
 ## Installation
 
@@ -12,152 +25,188 @@ pip install dmtapi
 
 ```python
 from dmtapi import DMTAPI
-from dmtapi.models.trade_model import TradeSetup, TradeDirection, TakeProfit
+from dmtapi.models.trade_model import TradeSetup, TakeProfit
 
-# Initialize the API
-api = DMTAPI(api_key="your_api_key")
 
-# Get account information
-account_info = await api.get_account_info(
-    access_token="your_access_token",
+async def main():
+    # Initialize the API with your credentials
+    api = DMTAPI(
+        api_key="your_api_key",
+        api_base_url="https://api.example.com"
+    )
+
+    # Get account information
+    account_info = await api.account.info(
+        access_token="your_access_token"
+    )
+
+    # Create and execute a trade
+    setup = TradeSetup(
+        symbol="EURUSD",
+        volume=0.1,
+        direction="buy",  # or "sell"
+        stop_loss=1.0500,
+        take_profits=[
+            TakeProfit(price=1.0600, close_pct=1.0)
+        ]
+    )
+
+    result = await api.trade.open(
+        setup=setup,
+        access_token="your_access_token"
+    )
+
+```
+
+## API Structure
+
+The DMTAPI is organized into several modules for different functionalities:
+
+- `account`: Account management and information
+- `symbol`: Symbol information and pricing
+- `trade`: Trade execution and management
+- `order`: Order history and position tracking
+
+### Account Management
+
+```python
+# Get specific account information
+account_info = await api.account.info(
+    access_token="your_access_token"
 )
 
-# alternatively use api key
-# account_info = await api.get_account_info(
-#     login=123
-#     server="your_server
-# )
+# Get all accounts
+all_accounts = await api.account.all()
+```
 
-# Create and execute a trade
-setup = TradeSetup(
+### Symbol Operations
+
+```python
+# Get symbol price
+price = await api.symbol.price(
     symbol="EURUSD",
-    volume=0.1,
-    direction=TradeDirection.buy,
-    stop_loss=1.0500,
-    take_profits=[
-        TakeProfit(price=1.0600, close_pct=1.0)
-    ]
+    access_token="your_access_token"
 )
 
-result = await api.open_trade(
-    setup=setup,
-    access_token="your_access_token",
+# Get symbol information
+symbol_info = await api.symbol.info(
+    symbol="EURUSD",
+    access_token="your_access_token"
+)
+```
+
+### Trade Operations
+
+```python
+# Open a trade
+result = await api.trade.open(
+    setup=trade_setup,
+    access_token="your_access_token"
+)
+
+# Close a position
+result = await api.trade.close(
+    ticket=12345,
+    access_token="your_access_token"
+)
+```
+
+### Order Management
+
+```python
+# Get position history
+history = await api.order.history(
+    access_token="your_access_token"
+)
+
+# Get pending orders
+pending = await api.order.pending(
+    access_token="your_access_token"
+)
+
+# Get open positions
+positions = await api.order.positions(
+    access_token="your_access_token"
+)
+```
+
+## Authentication
+
+The API supports two authentication methods:
+
+1. Access Token Authentication:
+
+```python
+api = DMTAPI(
+    api_key="your_api_key",
+    api_base_url="https://api.example.com",
+    access_token="your_access_token"
+)
+```
+
+2. Login/Server Authentication:
+
+```python
+# Use login and server for specific requests
+account_info = await api.account.info(
     login=12345,
-    server="your_server"
+    server="trading_server",
+    api_key="your_api_key"
 )
 ```
 
-## API Reference
+## Models
 
-### DMTAPI Class
-
-The main class for interacting with the trading API.
-
-#### Methods
-
-- `get_account_info(access_token=None, login=None, server=None, api_key=None) -> TraderInfo`
-    - Retrieves information about a specific trading account.
-    - Returns a TraderInfo object containing account details.
-
-- `get_all_accounts(api_key=None) -> list[TraderInfo]`
-    - Retrieves information about all available trading accounts.
-    - Returns a list of TraderInfo objects.
-
-- `open_trade(setup, access_token, login, server, api_key=None) -> dict`
-    - Opens a new trade based on the provided setup.
-    - Returns a dictionary containing the trade result.
-
-### Models
-
-#### TradeSetup
-
-Represents a trade setup configuration.
-
-**Fields:**
-
-- `symbol: str` - Trading symbol (e.g., "EURUSD")
-- `volume: float` - Trading volume (0-100)
-- `direction: TradeDirection` - Trade direction (buy/sell)
-- `magic: int` - Magic number for trade identification (optional)
-- `entry_price: float` - Entry price for the trade
-- `stop_loss: float` - Stop loss price
-- `sl_as_pip: float` - Stop loss in pips (takes priority over sl_as_pct)
-- `sl_as_pct: float` - Stop loss as percentage
-- `take_profits: list[TakeProfit]` - List of take profit levels
-- `deviation: int` - Maximum price deviation (0-100)
-
-#### TakeProfit
-
-Represents a take profit configuration.
-
-**Fields:**
-
-- `price: float` - Take profit price level
-- `close_pct: float` - Percentage of position to close (0-1)
-- `tp_as_pip: float` - Take profit in pips
-- `tp_as_pct: float` - Take profit as percentage
-
-#### TraderInfo
-
-Represents trading account information.
-
-**Fields:**
-
-- `name: str` - Account name
-- `server: str` - Trading server
-- `login: int` - Account login
-- `server_type: str` - Server type (default: "mt5")
-- `access_token: str` - Access token
-- `inception_date: datetime` - Account creation date
-- `starting_balance: float` - Initial account balance
-- `currency: str` - Account currency
-- `leverage: int` - Account leverage
-- `balance: float` - Current balance
-- `equity: float` - Current equity
-- `margin: float` - Used margin
-- `margin_free: float` - Free margin
-- `status: AccountStatusEnum` - Account connection status
-
-## Examples
-
-### Getting Account Information
+### TradeSetup
 
 ```python
-api = DMTAPI(api_key="your_api_key")
+from dmtapi.models.trade_model import TradeSetup, TakeProfit
 
-# Using access token
-account = await api.get_account_info(access_token="your_access_token")
-
-# Using login and server
-# account = await api.get_account_info(
-#     login="your_login",
-#     server="your_server"
-# )
-
-print(f"Account Balance: {account.balance}")
-print(f"Account Equity: {account.equity}")
-```
-
-### Opening a Trade
-
-```python
-from dmtapi.models.trade_model import TradeSetup, TradeDirection, TakeProfit
-
-# Create trade setup
 setup = TradeSetup(
-    symbol="EURUSD",
-    volume=0.1,
-    direction=TradeDirection.buy,
-    stop_loss=1.0500,
-    take_profits=[
+    symbol="EURUSD",  # Trading symbol
+    volume=0.1,  # Trading volume
+    direction="buy",  # Trade direction (buy/sell)
+    stop_loss=1.0500,  # Stop loss price
+    take_profits=[  # Multiple take profit levels
         TakeProfit(price=1.0600, close_pct=0.5),
         TakeProfit(price=1.0700, close_pct=0.5)
     ]
 )
-
-# Open trade
-result = await api.open_trade(
-    setup=setup,
-    access_token="your_access_token",
-)
 ```
+
+### TraderInfo
+
+Provides comprehensive account information including:
+
+- Account details (name, server, login)
+- Balance and equity
+- Margin information
+- Account status
+
+## Error Handling
+
+The API uses standard Python exceptions for error handling:
+
+```python
+try:
+    result = await api.trade.open(
+        setup=trade_setup,
+        access_token="your_access_token"
+    )
+except ValueError as e:
+    print(f"Invalid parameters: {e}")
+except Exception as e:
+    print(f"An error occurred: {e}")
+```
+
+## Examples
+
+For more detailed examples, check the [examples](./examples) directory in the repository.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

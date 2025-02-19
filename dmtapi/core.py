@@ -1,15 +1,41 @@
+from dataclasses import dataclass
 from typing import Optional
 
 from dmtapi.models.account_model import TraderInfo
+from dmtapi.models.deal_model import TradeDeal
+from dmtapi.models.order_model import TradeOrder
+from dmtapi.models.position_model import Position
+from dmtapi.models.symbol_model import SymbolInfoTick, SymbolInfo
 from dmtapi.models.trade_model import TradeSetup
 from dmtapi.req import RequestMaker
 
 
-class AccountInfoApi(RequestMaker):
-    def __init__(self, api_key: str, api_base_url: str):
-        super().__init__(api_base_url)
-        self.api_key = api_key
+@dataclass
+class APIConfig:
+    """Configuration class to hold API settings"""
 
+    api_key: str
+    api_base_url: str
+    access_token: Optional[str] = None
+
+
+class BaseAPI(RequestMaker):
+    """Base class for all API endpoints"""
+
+    def __init__(self, config: APIConfig):
+        super().__init__(config.api_base_url)
+        self._config = config
+
+    @property
+    def api_key(self) -> str:
+        return self._config.api_key
+
+    @property
+    def access_token(self) -> Optional[str]:
+        return self._config.access_token
+
+
+class AccountInfoApi(BaseAPI):
     async def info(
         self,
         access_token: Optional[str] = None,
@@ -37,7 +63,7 @@ class AccountInfoApi(RequestMaker):
 
         r = await self.get(
             path="/account/info",
-            access_token=access_token,
+            access_token=access_token or self.access_token,
             login=login,
             server=server,
             api_key=api_key or self.api_key,
@@ -60,11 +86,111 @@ class AccountInfoApi(RequestMaker):
         return [TraderInfo(**i) for i in r]
 
 
-class TradeApi(RequestMaker):
-    def __init__(self, api_key: str, api_base_url: str):
-        super().__init__(api_base_url)
-        self.api_key = api_key
+class SymbolApi(BaseAPI):
+    async def price(
+        self,
+        symbol: str,
+        access_token: Optional[str] = None,
+        login: Optional[int] = None,
+        server: Optional[str] = None,
+        api_key: Optional[str] = None,
+    ):
+        """
+        Get the current price of a symbol.
 
+        Args:
+            symbol (str): Symbol name.
+            access_token (Optional[str]): Account access token. Required if login and server are not provided.
+            login (Optional[str]): Account login. Required if access_token is not provided.
+            server (Optional[str]): Trading server. Required if access_token is not provided.
+            api_key (Optional[str]): Override default API key.
+
+        Returns:
+            dict: Symbol price information.
+        """
+        if not access_token and (not login or not server):
+            raise ValueError("Access token or login and server must be provided")
+
+        r = await self.get(
+            path="/symbol/price",
+            access_token=access_token or self.access_token,
+            login=login,
+            server=server,
+            api_key=api_key or self.api_key,
+            params={"symbol": symbol},
+        )
+
+        return SymbolInfoTick(**r)
+
+    async def info(
+        self,
+        symbol: str,
+        access_token: Optional[str] = None,
+        login: Optional[int] = None,
+        server: Optional[str] = None,
+        api_key: Optional[str] = None,
+    ):
+        """
+        Get information about a symbol.
+
+        Args:
+            symbol (str): Symbol name.
+            access_token (Optional[str]): Account access token. Required if login and server are not provided.
+            login (Optional[str]): Account login. Required if access_token is not provided.
+            server (Optional[str]): Trading server. Required if access_token is not provided.
+            api_key (Optional[str]): Override default API key.
+
+        Returns:
+            dict: Symbol information.
+        """
+        if not access_token and (not login or not server):
+            raise ValueError("Access token or login and server must be provided")
+
+        r = await self.get(
+            path="/symbol/info",
+            access_token=access_token or self.access_token,
+            login=login,
+            server=server,
+            api_key=api_key or self.api_key,
+            params={"symbol": symbol},
+        )
+
+        return SymbolInfo(**r)
+
+    async def all(
+        self,
+        access_token: Optional[str] = None,
+        login: Optional[int] = None,
+        server: Optional[str] = None,
+        api_key: Optional[str] = None,
+    ) -> list[str]:
+        """
+        Get information about all available symbols.
+
+        Args:
+            access_token (Optional[str]): Account access token. Required if login and server are not provided.
+            login (Optional[str]): Account login. Required if access_token is not provided.
+            server (Optional[str]): Trading server. Required if access_token is not provided.
+            api_key (Optional[str]): Override default API key.
+
+        Returns:
+            list[dict]: List of symbol information.
+        """
+        if not access_token and (not login or not server):
+            raise ValueError("Access token or login and server must be provided")
+
+        r = await self.get(
+            path="/symbol/all",
+            access_token=access_token or self.access_token,
+            login=login,
+            server=server,
+            api_key=api_key or self.api_key,
+        )
+
+        return r
+
+
+class TradeApi(BaseAPI):
     async def open(
         self,
         setup: TradeSetup,
@@ -93,7 +219,7 @@ class TradeApi(RequestMaker):
 
         r = await self.post(
             path="/trade/open",
-            access_token=access_token,
+            access_token=access_token or self.access_token,
             login=login,
             server=server,
             api_key=api_key or self.api_key,
@@ -133,7 +259,7 @@ class TradeApi(RequestMaker):
 
         r = await self.get(
             path="/trade/close",
-            access_token=access_token,
+            access_token=access_token or self.access_token,
             login=login,
             server=server,
             api_key=api_key or self.api_key,
@@ -171,7 +297,7 @@ class TradeApi(RequestMaker):
 
         r = await self.get(
             path="/trade/cancel",
-            access_token=access_token,
+            access_token=access_token or self.access_token,
             login=login,
             server=server,
             api_key=api_key or self.api_key,
@@ -181,90 +307,16 @@ class TradeApi(RequestMaker):
         return r
 
 
-class SymbolApi(RequestMaker):
-    def __init__(self, api_key: str, api_base_url: str):
-        super().__init__(api_base_url)
-        self.api_key = api_key
-
-    async def price(
-        self,
-        symbol: str,
-        access_token: Optional[str] = None,
-        login: Optional[int] = None,
-        server: Optional[str] = None,
-        api_key: Optional[str] = None,
-    ):
-        """
-        Get the current price of a symbol.
-
-        Args:
-            symbol (str): Symbol name.
-            access_token (Optional[str]): Account access token. Required if login and server are not provided.
-            login (Optional[str]): Account login. Required if access_token is not provided.
-            server (Optional[str]): Trading server. Required if access_token is not provided.
-            api_key (Optional[str]): Override default API key.
-
-        Returns:
-            dict: Symbol price information.
-        """
-        if not access_token and (not login or not server):
-            raise ValueError("Access token or login and server must be provided")
-
-        r = await self.get(
-            path="/symbol/price",
-            access_token=access_token,
-            login=login,
-            server=server,
-            api_key=api_key or self.api_key,
-            params={"symbol": symbol},
-        )
-
-        return r
-
-    async def info(
-        self,
-        symbol: str,
-        access_token: Optional[str] = None,
-        login: Optional[int] = None,
-        server: Optional[str] = None,
-        api_key: Optional[str] = None,
-    ):
-        """
-        Get information about a symbol.
-
-        Args:
-            symbol (str): Symbol name.
-            access_token (Optional[str]): Account access token. Required if login and server are not provided.
-            login (Optional[str]): Account login. Required if access_token is not provided.
-            server (Optional[str]): Trading server. Required if access_token is not provided.
-            api_key (Optional[str]): Override default API key.
-
-        Returns:
-            dict: Symbol information.
-        """
-        if not access_token and (not login or not server):
-            raise ValueError("Access token or login and server must be provided")
-
-        r = await self.get(
-            path="/symbol/info",
-            access_token=access_token,
-            login=login,
-            server=server,
-            api_key=api_key or self.api_key,
-            params={"symbol": symbol},
-        )
-
-        return r
-
-    async def all(
+class OrderApi(BaseAPI):
+    async def history(
         self,
         access_token: Optional[str] = None,
         login: Optional[int] = None,
         server: Optional[str] = None,
         api_key: Optional[str] = None,
-    ):
+    ) -> list[TradeDeal]:
         """
-        Get information about all available symbols.
+        Get the history of trades for a specific account.
 
         Args:
             access_token (Optional[str]): Account access token. Required if login and server are not provided.
@@ -273,20 +325,84 @@ class SymbolApi(RequestMaker):
             api_key (Optional[str]): Override default API key.
 
         Returns:
-            list[dict]: List of symbol information.
+            list[TradeDeal]: List of trade history.
         """
         if not access_token and (not login or not server):
             raise ValueError("Access token or login and server must be provided")
 
         r = await self.get(
-            path="/symbol/all",
-            access_token=access_token,
+            path="/deals/history",
+            access_token=access_token or self.access_token,
             login=login,
             server=server,
             api_key=api_key or self.api_key,
         )
 
-        return r
+        return [TradeDeal(**i) for i in r]
+
+    async def pending(
+        self,
+        access_token: Optional[str] = None,
+        login: Optional[int] = None,
+        server: Optional[str] = None,
+        api_key: Optional[str] = None,
+    ) -> list[TradeOrder]:
+        """
+        Get the history of trades for a specific account.
+
+        Args:
+            access_token (Optional[str]): Account access token. Required if login and server are not provided.
+            login (Optional[str]): Account login. Required if access_token is not provided.
+            server (Optional[str]): Trading server. Required if access_token is not provided.
+            api_key (Optional[str]): Override default API key.
+
+        Returns:
+            list[TradeOrder]: List of trade history.
+        """
+        if not access_token and (not login or not server):
+            raise ValueError("Access token or login and server must be provided")
+
+        r = await self.get(
+            path="/orders/pending",
+            access_token=access_token or self.access_token,
+            login=login,
+            server=server,
+            api_key=api_key or self.api_key,
+        )
+
+        return [TradeOrder(**i) for i in r]
+
+    async def positions(
+        self,
+        access_token: Optional[str] = None,
+        login: Optional[int] = None,
+        server: Optional[str] = None,
+        api_key: Optional[str] = None,
+    ) -> list[Position]:
+        """
+        Get the history of trades for a specific account.
+
+        Args:
+            access_token (Optional[str]): Account access token. Required if login and server are not provided.
+            login (Optional[str]): Account login. Required if access_token is not provided.
+            server (Optional[str]): Trading server. Required if access_token is not provided.
+            api_key (Optional[str]): Override default API key.
+
+        Returns:
+            list[Position]: List of trade history.
+        """
+        if not access_token and (not login or not server):
+            raise ValueError("Access token or login and server must be provided")
+
+        r = await self.get(
+            path="/orders/open",
+            access_token=access_token or self.access_token,
+            login=login,
+            server=server,
+            api_key=api_key or self.api_key,
+        )
+
+        return [Position(**i) for i in r]
 
 
 class DMTAPI:
@@ -299,8 +415,30 @@ class DMTAPI:
         api_key (str): The API key for authentication.
     """
 
-    def __init__(self, api_key: str, api_base_url: str):
-        self.api_key = api_key
-        self.account = AccountInfoApi(self.api_key, api_base_url)
-        self.trade = TradeApi(self.api_key, api_base_url)
-        self.symbol = SymbolApi(self.api_key, api_base_url)
+    def __init__(
+        self, api_key: str, api_base_url: str, access_token: Optional[str] = None
+    ):
+        self._config = APIConfig(
+            api_key=api_key, api_base_url=api_base_url, access_token=access_token
+        )
+
+        self.account = AccountInfoApi(self._config)
+        self.trade = TradeApi(self._config)
+        self.order = OrderApi(self._config)
+        self.symbol = SymbolApi(self._config)
+
+    @property
+    def api_key(self) -> str:
+        return self._config.api_key
+
+    @api_key.setter
+    def api_key(self, value: str):
+        self._config.api_key = value
+
+    @property
+    def access_token(self) -> Optional[str]:
+        return self._config.access_token
+
+    @access_token.setter
+    def access_token(self, value: Optional[str]):
+        self._config.access_token = value
