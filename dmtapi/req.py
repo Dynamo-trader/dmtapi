@@ -1,4 +1,3 @@
-from functools import lru_cache
 from typing import Union, Any, Optional
 from urllib.parse import urlencode
 
@@ -13,7 +12,6 @@ class RequestMaker:
             headers={"Accept-Encoding": "gzip", "Content-Type": "application/json"},
         )
 
-    @lru_cache(maxsize=100)
     def build_url(self, url: str, params: Optional[dict] = None) -> str:
         url = f"{self.api_base_url}{url}"
         if not params:
@@ -22,7 +20,6 @@ class RequestMaker:
         return f"{url}?{urlencode(filtered_params)}"
 
     @staticmethod
-    @lru_cache(maxsize=100)
     def get_headers(
         extra_headers: Optional[dict] = None,
         access_token: Optional[str] = None,
