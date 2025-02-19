@@ -1,3 +1,3 @@
 from .core import DMTAPI
 
-__version__ = "2025.3.dev1"
+__version__ = "2025.3.dev2"

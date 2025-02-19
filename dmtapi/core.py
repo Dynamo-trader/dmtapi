@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from dmtapi.decorators import check_provided_access_token
 from dmtapi.models.account_model import TraderInfo
 from dmtapi.models.deal_model import TradeDeal
 from dmtapi.models.order_model import TradeOrder
@@ -36,8 +37,10 @@ class BaseAPI(RequestMaker):
 
 
 class AccountInfoApi(BaseAPI):
+    @check_provided_access_token
     async def info(
         self,
+        *,
         access_token: Optional[str] = None,
         login: Optional[int] = None,
         server: Optional[str] = None,
@@ -58,8 +61,6 @@ class AccountInfoApi(BaseAPI):
         Raises:
             ValueError: If neither access_token nor both login and server are provided.
         """
-        if not access_token and (not login or not server):
-            raise ValueError("Access token or login and server must be provided")
 
         r = await self.get(
             path="/account/info",
@@ -71,7 +72,7 @@ class AccountInfoApi(BaseAPI):
 
         return TraderInfo(**r)
 
-    async def all(self, api_key: Optional[str] = None) -> list[TraderInfo]:
+    async def all(self, *, api_key: Optional[str] = None) -> list[TraderInfo]:
         """
         Retrieve information about all available trading accounts.
 
@@ -80,15 +81,23 @@ class AccountInfoApi(BaseAPI):
 
         Returns:
             list[TraderInfo]: List of objects containing account information.
+
+        Raises:
+            ValueError: If neither api_key nor self.api_key is provided.
         """
+        if not api_key and not self.api_key:
+            raise ValueError("API key is required to access all accounts")
+
         r = await self.get(path="/account/all", api_key=api_key or self.api_key)
 
         return [TraderInfo(**i) for i in r]
 
 
 class SymbolApi(BaseAPI):
+    @check_provided_access_token
     async def price(
         self,
+        *,
         symbol: str,
         access_token: Optional[str] = None,
         login: Optional[int] = None,
@@ -108,8 +117,6 @@ class SymbolApi(BaseAPI):
         Returns:
             dict: Symbol price information.
         """
-        if not access_token and (not login or not server):
-            raise ValueError("Access token or login and server must be provided")
 
         r = await self.get(
             path="/symbol/price",
@@ -122,8 +129,10 @@ class SymbolApi(BaseAPI):
 
         return SymbolInfoTick(**r)
 
+    @check_provided_access_token
     async def info(
         self,
+        *,
         symbol: str,
         access_token: Optional[str] = None,
         login: Optional[int] = None,
@@ -143,8 +152,6 @@ class SymbolApi(BaseAPI):
         Returns:
             dict: Symbol information.
         """
-        if not access_token and (not login or not server):
-            raise ValueError("Access token or login and server must be provided")
 
         r = await self.get(
             path="/symbol/info",
@@ -157,8 +164,10 @@ class SymbolApi(BaseAPI):
 
         return SymbolInfo(**r)
 
+    @check_provided_access_token
     async def all(
         self,
+        *,
         access_token: Optional[str] = None,
         login: Optional[int] = None,
         server: Optional[str] = None,
@@ -176,8 +185,6 @@ class SymbolApi(BaseAPI):
         Returns:
             list[dict]: List of symbol information.
         """
-        if not access_token and (not login or not server):
-            raise ValueError("Access token or login and server must be provided")
 
         r = await self.get(
             path="/symbol/all",
@@ -191,8 +198,10 @@ class SymbolApi(BaseAPI):
 
 
 class TradeApi(BaseAPI):
+    @check_provided_access_token
     async def open(
         self,
+        *,
         setup: TradeSetup,
         access_token: str,
         login: Optional[int] = None,
@@ -214,8 +223,6 @@ class TradeApi(BaseAPI):
             If you have multiple tp it returns multiple trades as MT5 doesn't support more than one tp on a trade.
             So it splits the volume and opens multiple trades with the same entry, sl and tp.
         """
-        if not access_token and (not login or not server):
-            raise ValueError("Access token or login and server must be provided")
 
         r = await self.post(
             path="/trade/open",
@@ -228,8 +235,10 @@ class TradeApi(BaseAPI):
 
         return r
 
+    @check_provided_access_token
     async def close(
         self,
+        *,
         ticket: int,
         volume: float = None,
         access_token: Optional[str] = None,
@@ -254,8 +263,6 @@ class TradeApi(BaseAPI):
         Raises:
             ValueError: If it fails to close the position.
         """
-        if not access_token and (not login or not server):
-            raise ValueError("Access token or login and server must be provided")
 
         r = await self.get(
             path="/trade/close",
@@ -268,8 +275,10 @@ class TradeApi(BaseAPI):
 
         return r
 
+    @check_provided_access_token
     async def cancel(
         self,
+        *,
         ticket: int,
         access_token: Optional[str] = None,
         login: Optional[int] = None,
@@ -292,8 +301,6 @@ class TradeApi(BaseAPI):
         Raises:
             ValueError: If it fails to cancel the pending order.
         """
-        if not access_token and (not login or not server):
-            raise ValueError("Access token or login and server must be provided")
 
         r = await self.get(
             path="/trade/cancel",
@@ -306,8 +313,10 @@ class TradeApi(BaseAPI):
 
         return r
 
+    @check_provided_access_token
     async def modify(
         self,
+        *,
         ticket: int,
         price_tp: Optional[float] = 0.0,
         price_sl: Optional[float] = 0.0,
@@ -337,8 +346,6 @@ class TradeApi(BaseAPI):
         Raises:
             ValueError: If it fails to modify the trade.
         """
-        if not access_token and (not login or not server):
-            raise ValueError("Access token or login and server must be provided")
 
         if not price_tp and not price_sl and not volume:
             raise ValueError(
@@ -363,8 +370,10 @@ class TradeApi(BaseAPI):
 
 
 class OrderApi(BaseAPI):
+    @check_provided_access_token
     async def history(
         self,
+        *,
         access_token: Optional[str] = None,
         login: Optional[int] = None,
         server: Optional[str] = None,
@@ -382,8 +391,6 @@ class OrderApi(BaseAPI):
         Returns:
             list[TradeDeal]: List of trade history.
         """
-        if not access_token and (not login or not server):
-            raise ValueError("Access token or login and server must be provided")
 
         r = await self.get(
             path="/deals/history",
@@ -395,8 +402,10 @@ class OrderApi(BaseAPI):
 
         return [TradeDeal(**i) for i in r]
 
+    @check_provided_access_token
     async def pending(
         self,
+        *,
         access_token: Optional[str] = None,
         login: Optional[int] = None,
         server: Optional[str] = None,
@@ -414,8 +423,6 @@ class OrderApi(BaseAPI):
         Returns:
             list[TradeOrder]: List of trade history.
         """
-        if not access_token and (not login or not server):
-            raise ValueError("Access token or login and server must be provided")
 
         r = await self.get(
             path="/orders/pending",
@@ -427,8 +434,10 @@ class OrderApi(BaseAPI):
 
         return [TradeOrder(**i) for i in r]
 
+    @check_provided_access_token
     async def positions(
         self,
+        *,
         access_token: Optional[str] = None,
         login: Optional[int] = None,
         server: Optional[str] = None,
@@ -446,8 +455,6 @@ class OrderApi(BaseAPI):
         Returns:
             list[Position]: List of trade history.
         """
-        if not access_token and (not login or not server):
-            raise ValueError("Access token or login and server must be provided")
 
         r = await self.get(
             path="/orders/open",

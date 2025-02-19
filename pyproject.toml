@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dmtapi"
-version = "2025.3.dev1"
+version = "2025.3.dev2"
 description = "Dynamo MetaTrader API"
 readme = "README.md"
 authors = [

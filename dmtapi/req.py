@@ -21,6 +21,7 @@ class RequestMaker:
 
     @staticmethod
     def get_headers(
+        *,
         extra_headers: Optional[dict] = None,
         access_token: Optional[str] = None,
         login: Optional[int] = None,
@@ -46,6 +47,7 @@ class RequestMaker:
 
     async def get(
         self,
+        *,
         path: str,
         params: Optional[dict[str, str]] = None,
         extra_headers: Optional[dict] = None,
@@ -72,6 +74,7 @@ class RequestMaker:
 
     async def post(
         self,
+        *,
         path: str,
         params: Optional[dict[str, str]] = None,
         data: Optional[Union[dict, str]] = None,
