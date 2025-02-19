@@ -306,6 +306,61 @@ class TradeApi(BaseAPI):
 
         return r
 
+    async def modify(
+        self,
+        ticket: int,
+        price_tp: Optional[float] = 0.0,
+        price_sl: Optional[float] = 0.0,
+        volume: Optional[float] = 0.0,
+        access_token: Optional[str] = None,
+        login: Optional[int] = None,
+        server: Optional[str] = None,
+        api_key: Optional[str] = None,
+    ):
+        """
+        Modify an existing trade by ticket number.
+        To edit the entry you need to cancel the trade and open a new one.
+
+        Args:
+            ticket (int): Ticket number of the trade to modify.
+            price_tp (float): New take profit price.
+            price_sl (float): New stop loss price.
+            volume (float): New trade volume.
+            access_token (Optional[str]): Account access token. Required if login and server are not provided.
+            login (Optional[str]): Account login. Required if access_token is not provided.
+            server (Optional[str]): Trading server. Required if access_token is not provided.
+            api_key (Optional[str]): Override default API key.
+
+        Returns:
+            dict: Response from the server.
+
+        Raises:
+            ValueError: If it fails to modify the trade.
+        """
+        if not access_token and (not login or not server):
+            raise ValueError("Access token or login and server must be provided")
+
+        if not price_tp and not price_sl and not volume:
+            raise ValueError(
+                "At least one of price_tp, price_sl, or volume must be provided"
+            )
+
+        r = await self.post(
+            path="/trade/modify",
+            access_token=access_token or self.access_token,
+            login=login,
+            server=server,
+            api_key=api_key or self.api_key,
+            data={
+                "ticket": ticket,
+                "price_tp": price_tp,
+                "price_sl": price_sl,
+                "volume": volume,
+            },
+        )
+
+        return r
+
 
 class OrderApi(BaseAPI):
     async def history(
