@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dmtapi"
-version = "2025.3.dev3"
+version = "2025.3.dev4"
 description = "Dynamo MetaTrader API"
 readme = "README.md"
 authors = [
@@ -28,7 +28,6 @@ dependencies = [
     "httpx>=0.28.1",
     "pendulum>=3.0.0",
     "pydantic>=2.10.6",
-    "pytz>=2024.1",
 ]
 
 # development dependencies
@@ -49,3 +48,9 @@ Repository = "https://github.com/Dynamo-trader/dmtapi.git"
 
 [tool.setuptools]
 packages = { find = { include = ["dmtapi", "dmtapi.*"] } }
+
+[tool.wheel]
+exclude = ["tests/*", "docs/*", "examples/*"]
+
+[tool.bdist_wheel]
+universal = false

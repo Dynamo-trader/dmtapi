@@ -2,8 +2,9 @@ from datetime import datetime
 from enum import Enum
 from typing import Union
 
-import pytz
 from pydantic import BaseModel, Field, model_validator, field_validator
+
+from dmtapi.constant import TZ_UTC
 
 
 class PlaceOrderType(Enum):
@@ -103,14 +104,14 @@ class TradeOrder(BaseModel):
                 return None
             try:
                 # 2024.09.11 16:29:16
-                return datetime.strptime(v, "%Y.%m.%d %H:%M:%S").astimezone(tz=pytz.UTC)
+                return datetime.strptime(v, "%Y.%m.%d %H:%M:%S").astimezone(tz=TZ_UTC)
             except ValueError:
                 # 2024-08-10T07:38:46+00:00
-                return datetime.fromisoformat(v).astimezone(tz=pytz.UTC)
+                return datetime.fromisoformat(v).astimezone(tz=TZ_UTC)
         elif isinstance(v, int):
             if v == 0:
                 return None
-            return datetime.fromtimestamp(v / 1000).astimezone(tz=pytz.UTC)
+            return datetime.fromtimestamp(v / 1000).astimezone(tz=TZ_UTC)
 
         return v
 
