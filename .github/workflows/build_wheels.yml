@@ -47,7 +47,7 @@ jobs:
           - os: windows-latest
             platform: win_amd64
           - os: macos-latest
-            platform: macosx_*
+            platform: macos-13
 
     steps:
       - uses: actions/checkout@v4
