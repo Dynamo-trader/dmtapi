@@ -103,7 +103,7 @@ class SymbolApi(BaseAPI):
         login: Optional[int] = None,
         server: Optional[str] = None,
         api_key: Optional[str] = None,
-    ):
+    ) -> SymbolInfoTick:
         """
         Get the current price of a symbol.
 
@@ -115,7 +115,7 @@ class SymbolApi(BaseAPI):
             api_key (Optional[str]): Override default API key.
 
         Returns:
-            dict: Symbol price information.
+            SymbolInfoTick: Symbol price information.
         """
 
         r = await self.get(
@@ -138,7 +138,7 @@ class SymbolApi(BaseAPI):
         login: Optional[int] = None,
         server: Optional[str] = None,
         api_key: Optional[str] = None,
-    ):
+    ) -> SymbolInfo:
         """
         Get information about a symbol.
 
@@ -150,7 +150,7 @@ class SymbolApi(BaseAPI):
             api_key (Optional[str]): Override default API key.
 
         Returns:
-            dict: Symbol information.
+            SymbolInfo: Symbol information.
         """
 
         r = await self.get(
