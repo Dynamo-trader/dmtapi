@@ -46,26 +46,11 @@ class SymbolInfo(SymbolInfoLess):
     lasthigh: float
     lastlow: float
     margin_hedged: float
-    margin_hedged_use_leg: bool
     margin_initial: float
     margin_maintenance: float
-    option_mode: int
-    option_right: int
-    option_strike: float
-    order_gtc_mode: int
     order_mode: int
     page: str
     point: float
-    price_change: float
-    price_greeks_delta: float
-    price_greeks_gamma: float
-    price_greeks_omega: float
-    price_greeks_rho: float
-    price_greeks_theta: float
-    price_greeks_vega: float
-    price_sensitivity: float
-    price_theoretical: float
-    price_volatility: float
     select: bool
     session_aw: float
     session_buy_orders: int

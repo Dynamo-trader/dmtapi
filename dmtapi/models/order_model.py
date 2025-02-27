@@ -80,7 +80,6 @@ class TradeOrder(BaseModel):
     time_expiration: Union[int, None] = Field(default=None)
     type: OrderTypeEnum
     type_time: OrderTypeTimeEnum
-    type_filling: int
     state: OrderStateEnum
     magic: int
     position_id: int
