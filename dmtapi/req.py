@@ -68,6 +68,8 @@ class RequestMaker:
         response = await self.client.get(full_url, headers=headers)
         if response.status_code == 422:
             raise ValueError(response.json())
+        elif response.status_code == 400:
+            raise ValueError(response.text)
 
         response.raise_for_status()
         return response.json()
@@ -99,6 +101,8 @@ class RequestMaker:
         )
         if response.status_code == 422:
             raise ValueError(response.json())
+        elif response.status_code == 400:
+            raise ValueError(response.text)
 
         response.raise_for_status()
         return response.json()
