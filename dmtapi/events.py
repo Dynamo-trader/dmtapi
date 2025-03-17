@@ -22,9 +22,9 @@ class StreamClient:
         "_session",
         "_buffer",
         "last_event_id",
+        "last_event_id_file",
     )
 
-    last_event_id_file = ".dmtapi/last_event_id.txt"
     class_lock = asyncio.Lock()
 
     def __init__(
@@ -34,6 +34,7 @@ class StreamClient:
         max_line_size: int = 1_048_576 * 2,  # 2MB
         retry_config: Optional[dict[str, Union[int, float]]] = None,
         load_last_events: bool = False,
+        last_event_id_file: str = ".dmtapi/last_event_id.txt",
     ):
         """
         Initialize the StreamClient with the given configuration.
@@ -43,6 +44,8 @@ class StreamClient:
             api_key: API key for authentication
             max_line_size: Maximum buffer size in bytes
             retry_config: Connection retry configuration
+            load_last_events: Load last event ID from file
+            last_event_id_file: File to save last event ID
         """
         self.url = url
         self.api_key = api_key
@@ -53,7 +56,12 @@ class StreamClient:
             "multiplier": 1.5,  # Exponential backoff
             "max_attempts": None,  # Unlimited retries
         }
-        self.last_event_id = self.load_last_event_id() if load_last_events else None
+        self.last_event_id_file = last_event_id_file
+        self.last_event_id = (
+            self.load_last_event_id(self.last_event_id_file)
+            if load_last_events
+            else None
+        )
 
         self.event_handlers = defaultdict(list)
         self.logger = logging.getLogger("StreamClient")
@@ -131,7 +139,7 @@ class StreamClient:
 
                 # Extract and process message
                 message = self._buffer[:nl_pos]
-                del self._buffer[: nl_pos + 1]  # More efficient than slicing
+                del self._buffer[: nl_pos + 1]
                 await self._process_message(message)
 
             # Safety check for buffer overflow
@@ -263,17 +271,20 @@ class StreamClient:
                 except Exception as e:
                     self.logger.error(f"Failed to save event ID: {e}")
 
-    @classmethod
-    def load_last_event_id(cls) -> Optional[str]:
+    @staticmethod
+    def load_last_event_id(last_event_id_file: str) -> Optional[str]:
         """Load last event ID from file. Call once when initializing the client"""
         os.makedirs(".dmtapi", exist_ok=True)
 
+        if not os.path.exists(last_event_id_file) or not os.path.isfile(
+            last_event_id_file
+        ):
+            return None
+
         try:
-            with open(cls.last_event_id_file, "r") as f:
+            with open(last_event_id_file, "r") as f:
                 event_id = f.read().strip()
             return event_id if event_id else None
-        except FileNotFoundError:
-            return None
         except Exception as e:
-            logging.getLogger("StreamClient").error(f"Failed to load event ID: {e}")
+            logging.error(f"Failed to load event ID: {e}")
             return None
