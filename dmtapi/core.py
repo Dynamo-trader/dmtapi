@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from dmtapi.decorators import check_provided_access_token
+from dmtapi.events import StreamClient
 from dmtapi.models.account_model import TraderInfo
 from dmtapi.models.deal_model import TradeDeal
 from dmtapi.models.order_model import TradeOrder
@@ -467,7 +468,7 @@ class OrderApi(BaseAPI):
         return [Position(**i) for i in r]
 
 
-class DMTAPI:
+class DMTAPI(StreamClient):
     """
     Main class for interacting with the DMT trading API.
 
@@ -475,11 +476,22 @@ class DMTAPI:
 
     Args:
         api_key (str): The API key for authentication.
+        api_base_url (str): The base URL for the API.
+        access_token (Optional[str]): The access token for the account.
+        load_last_events (bool): Whether to load the last events from the stream.
     """
 
     def __init__(
-        self, api_key: str, api_base_url: str, access_token: Optional[str] = None
+        self,
+        api_key: str,
+        api_base_url: str,
+        access_token: Optional[str] = None,
+        load_last_events: bool = False,
     ):
+        super().__init__(
+            url=api_base_url, api_key=api_key, load_last_events=load_last_events
+        )
+
         self._config = APIConfig(
             api_key=api_key, api_base_url=api_base_url, access_token=access_token
         )
