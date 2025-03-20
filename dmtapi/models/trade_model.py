@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing_extensions import TypedDict
 
 
@@ -63,3 +63,10 @@ class TradeSetup(BaseModel):
     )
     take_profits: list[TakeProfit] = Field(default_factory=list)
     deviation: int = Field(default=0, ge=0, le=100)
+    comment: str = Field(
+        default="DYNAMO", description="Trade comment. It cannot contain commas."
+    )
+
+    @field_validator("comment", mode="before")
+    def remove_comma(cls, v):
+        return v.replace(",", "_")

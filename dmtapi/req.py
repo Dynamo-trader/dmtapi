@@ -10,6 +10,7 @@ class RequestMaker:
         self.client = httpx.AsyncClient(
             timeout=60,
             headers={"Accept-Encoding": "gzip", "Content-Type": "application/json"},
+            http2=True
         )
 
     def build_url(self, url: str, params: Optional[dict] = None) -> str:
