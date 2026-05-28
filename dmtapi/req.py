@@ -32,14 +32,14 @@ class RequestMaker:
         headers = {}
 
         if access_token:
-            headers["ACCESS-TOKEN"] = access_token
+            headers["X-Access-Token"] = access_token
 
         if login and server:
-            headers["TRADER-LOGIN"] = str(login)
-            headers["TRADER-SERVER"] = server
+            headers["X-Trader-Login"] = str(login)
+            headers["X-Trader-Server"] = server
 
         if api_key:
-            headers["USER-API-KEY"] = api_key
+            headers["X-User-Api-Key"] = api_key
 
         if extra_headers:
             headers.update(extra_headers)
